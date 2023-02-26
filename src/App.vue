@@ -4,11 +4,35 @@ import { ref, onMounted } from 'vue'
 let latitude = ref(8.498515)
 let longitude = ref(76.950596)
 let mapRef = ref(null)
+let marker = ref(null)
+const map = ref(null)
+
+let setMarker = () => {
+  if (marker.value !== null) {
+    marker.value.setVisible(false)
+    marker.value.setMap(null)
+    marker.value = null
+  }
+  if (map.value !== null) {
+    marker.value = new window.google.maps.Marker({
+      position: {
+        lat: latitude.value,
+        lng: longitude.value
+      },
+      map: map.value
+    })
+    map.value.setCenter({
+      lat: latitude.value,
+      lng: longitude.value
+    })
+  }
+}
 
 if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition((position) => {
     latitude.value = position.coords.latitude
     longitude.value = position.coords.longitude
+    setMarker()
   })
 }
 
@@ -20,19 +44,19 @@ onMounted(() => {
     }`
     window.document.body.appendChild(googleMapScript)
     googleMapScript.addEventListener('load', () => {
-      const map = new window.google.maps.Map(mapRef.value, {
+      map.value = new window.google.maps.Map(mapRef.value, {
         zoom: 15,
         center: new window.google.maps.LatLng(latitude.value, longitude.value),
         mapTypeControl: false
       })
 
-      new window.google.maps.Marker({
-        position: {
-          lat: latitude.value,
-          lng: longitude.value
-        },
-        map
+      map.value.addListener('click', (mapsMouseEvent) => {
+        latitude.value = mapsMouseEvent.latLng.lat()
+        longitude.value = mapsMouseEvent.latLng.lng()
+        setMarker()
       })
+
+      setMarker()
     })
   }
 })
