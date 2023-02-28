@@ -1,16 +1,22 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { doc, setDoc } from 'firebase/firestore'
+import { VueRecaptcha } from 'vue-recaptcha'
 
 const props = defineProps({
   db: Object
 })
 
 const collectionName = 'geotagging-stpeterstvm-org'
+const captchaSiteKey = import.meta.env.VITE_APP_RECAPTCHA_SITE_KEY
 
 let nameRef = ref('')
 let directoryIdRef = ref('')
 let phoneNumberRef = ref('')
+
+let isCaptchaSuccess = ref(false)
+let error = ref('')
+let isSubmitted = ref(false)
 
 let latitude = ref(8.498515)
 let longitude = ref(76.950596)
@@ -19,7 +25,9 @@ let mapRef = ref(null)
 let marker = ref(null)
 let map = ref(null)
 
-let isSubmitted = ref(false)
+let handleCaptchaSuccess = function () {
+  isCaptchaSuccess.value = true
+}
 
 let onSubmit = async function (event) {
   event.preventDefault()
@@ -29,17 +37,20 @@ let onSubmit = async function (event) {
   const directoryIdVal = directoryIdRef.value.value
   const phoneNumberVal = phoneNumberRef.value.value
 
-  await setDoc(doc(props.db, collectionName, directoryIdVal), {
-    name: nameVal,
-    directoryId: directoryIdVal,
-    phoneNumber: phoneNumberVal,
-    coords: {
-      latitude: latitude.value,
-      longitude: longitude.value
-    }
-  })
-
-  isSubmitted.value = true
+  if (isCaptchaSuccess.value) {
+    await setDoc(doc(props.db, collectionName, directoryIdVal), {
+      name: nameVal,
+      directoryId: directoryIdVal,
+      phoneNumber: phoneNumberVal,
+      coords: {
+        latitude: latitude.value,
+        longitude: longitude.value
+      }
+    })
+    isSubmitted.value = true
+  } else {
+    error.value = 'Unable to submit. Please refresh and try again'
+  }
 }
 
 let setMarker = () => {
@@ -102,13 +113,15 @@ onMounted(() => {
     <div class="row">
       <div class="col-xs-12 col-lg-offset-3 col-lg-6">
         <div class="text-center">
+          <h1 id="title">Geotagging Form (St Peter's Youth Assosciation)</h1>
           <template v-if="isSubmitted">
-            <h1 id="title">Geo Tagging Form</h1>
             <p id="description" class="description text-center">Thank you for your response.</p>
           </template>
+          <template v-else-if="isError">
+            <p id="description" class="description text-center">{{ error }}</p>
+          </template>
           <template v-else>
-            <h1 id="title">Geo Tagging Form</h1>
-            <p id="description" class="description text-center">Description here</p>
+            <p id="description" class="description text-center">TODO:: Add description</p>
           </template>
         </div>
         <form id="geotagging-form" @submit="onSubmit" v-if="!isSubmitted" method="post">
@@ -157,7 +170,15 @@ onMounted(() => {
           <fieldset>
             <div class="map" ref="mapRef"></div>
           </fieldset>
-          <button id="submit" type="submit" class="btn">Submit the form</button>
+          <fieldset>
+            <VueRecaptcha
+              :sitekey="captchaSiteKey"
+              :load-recaptcha-script="true"
+              @verify="handleCaptchaSuccess"
+              class="reCaptcha"
+            ></VueRecaptcha>
+          </fieldset>
+          <button id="submit" type="submit" class="btn">Submit</button>
         </form>
       </div>
     </div>
@@ -254,6 +275,12 @@ onMounted(() => {
 
   .map {
     height: 250px;
+  }
+
+  .reCaptcha {
+    :first-child {
+      margin: 0 auto;
+    }
   }
 }
 </style>
