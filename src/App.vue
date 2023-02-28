@@ -111,7 +111,7 @@ onMounted(() => {
             <p id="description" class="description text-center">Description here</p>
           </template>
         </div>
-        <form id="geotagging-form" @submit="onSubmit" v-if="!isSubmitted">
+        <form id="geotagging-form" @submit="onSubmit" v-if="!isSubmitted" method="post">
           <fieldset>
             <label for="name">
               Name *
