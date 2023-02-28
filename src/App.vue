@@ -1,11 +1,46 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { doc, setDoc } from 'firebase/firestore'
+
+const props = defineProps({
+  db: Object
+})
+
+const collectionName = 'geotagging-stpeterstvm-org'
+
+let nameRef = ref('')
+let directoryIdRef = ref('')
+let phoneNumberRef = ref('')
 
 let latitude = ref(8.498515)
 let longitude = ref(76.950596)
+
 let mapRef = ref(null)
 let marker = ref(null)
-const map = ref(null)
+let map = ref(null)
+
+let isSubmitted = ref(false)
+
+let onSubmit = async function (event) {
+  event.preventDefault()
+  event.stopPropagation()
+
+  const nameVal = nameRef.value.value
+  const directoryIdVal = directoryIdRef.value.value
+  const phoneNumberVal = phoneNumberRef.value.value
+
+  await setDoc(doc(props.db, collectionName, directoryIdVal), {
+    name: nameVal,
+    directoryId: directoryIdVal,
+    phoneNumber: phoneNumberVal,
+    coords: {
+      latitude: latitude.value,
+      longitude: longitude.value
+    }
+  })
+
+  isSubmitted.value = true
+}
 
 let setMarker = () => {
   if (marker.value !== null) {
@@ -67,10 +102,16 @@ onMounted(() => {
     <div class="row">
       <div class="col-xs-12 col-lg-offset-3 col-lg-6">
         <div class="text-center">
-          <h1 id="title">Geo Tagging Form</h1>
-          <p id="description" class="description text-center">Description here</p>
+          <template v-if="isSubmitted">
+            <h1 id="title">Geo Tagging Form</h1>
+            <p id="description" class="description text-center">Thank you for your response.</p>
+          </template>
+          <template v-else>
+            <h1 id="title">Geo Tagging Form</h1>
+            <p id="description" class="description text-center">Description here</p>
+          </template>
         </div>
-        <form id="geotagging-form">
+        <form id="geotagging-form" @submit="onSubmit" v-if="!isSubmitted">
           <fieldset>
             <label for="name">
               Name *
@@ -80,6 +121,7 @@ onMounted(() => {
                 id="name"
                 name="name"
                 placeholder="Enter your name (required)"
+                ref="nameRef"
                 required
               />
             </label>
@@ -93,6 +135,7 @@ onMounted(() => {
                 id="directory_id"
                 name="directory_id"
                 placeholder="Enter your Directory Id (required)"
+                ref="directoryIdRef"
                 required
               />
             </label>
@@ -106,6 +149,7 @@ onMounted(() => {
                 id="contact_no"
                 name="contact_no"
                 placeholder="Enter your Contact Number"
+                ref="phoneNumberRef"
                 required
               />
             </label>

@@ -2,9 +2,11 @@ import { createApp } from 'vue'
 import App from './App.vue'
 
 import { initializeApp } from 'firebase/app'
+import { getFirestore } from 'firebase/firestore'
 
-const app = initializeApp(import.meta.env.VITE_APP_FIREBASE_SDK_CONFIG)
+const app = initializeApp(JSON.parse(import.meta.env.VITE_APP_FIREBASE_SDK_CONFIG))
+const db = getFirestore(app)
 
 import './assets/main.scss'
 
-createApp(App).mount('#app')
+createApp(App, { db }).mount('#app')
