@@ -51,6 +51,8 @@ let onSubmit = async function (event) {
   } else {
     error.value = 'Unable to submit. Please refresh and try again'
   }
+
+  return false
 }
 
 let setMarker = () => {
@@ -113,7 +115,7 @@ onMounted(() => {
     <div class="row">
       <div class="col-xs-12 col-lg-offset-3 col-lg-6">
         <div class="text-center">
-          <h1 id="title">Geotagging Form (St Peter's Youth Assosciation)</h1>
+          <h1 id="title">Geotagging Form</h1>
           <template v-if="isSubmitted">
             <p id="description" class="description text-center">Thank you for your response.</p>
           </template>
