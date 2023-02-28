@@ -1,6 +1,6 @@
 # geotagging.stpeterstvm.org
 
-Basic form used to collect user details. User can provide details such as name, phone number and directory id. To obtain the location of user, the geolocation of the user is obtained from the browser, which is then used to show a marker on the map. The user can select another location by placing another marker on the map. On submitting the form, the entered details are stored in a firebase collection.
+Basic form used to collect details from user. User can provide details such as name, phone number and directory id. To obtain the location of user, the geolocation of the user is obtained from the browser, which is then used to show a marker on the map. The user can select another location by placing another marker on the map. On submitting the form, the entered details are stored in a firebase collection.
 
 ## Environment Variables
 
